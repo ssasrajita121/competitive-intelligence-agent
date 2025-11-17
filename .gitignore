@@ -1,0 +1,24 @@
+notepad .gitignore
+```
+
+**Add:**
+```
+# Environment
+.env
+venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Streamlit
+.streamlit/
+
+# Data cache
+data/cache/*
+
+# IDE
+.vscode/
+.idea/
