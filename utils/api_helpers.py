@@ -4,12 +4,13 @@ API helper functions for external data sources
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
-import openai
+from openai import OpenAI
 from config.config import Config
 
-# Set OpenAI API key if available
+# Initialize OpenAI client (NEW pattern for openai>=1.0)
+client = None
 if Config.OPENAI_API_KEY:
-    openai.api_key = Config.OPENAI_API_KEY
+    client = OpenAI(api_key=Config.OPENAI_API_KEY)
 
 
 class APIHelpers:
@@ -36,8 +37,12 @@ class APIHelpers:
                 "Cloud: Add to Streamlit Secrets"
             )
         
+        # Check if client is initialized
+        if client is None:
+            raise RuntimeError("OpenAI client not initialized")
+        
         try:
-            response = openai.chat.completions.create(
+            response = client.chat.completions.create(
                 model=Config.OPENAI_MODEL,
                 messages=[
                     {"role": "system", "content": "You are a helpful AI assistant."},
@@ -55,8 +60,6 @@ class APIHelpers:
             
             return content
             
-        except openai.APIError as e:
-            raise Exception(f"OpenAI API error: {str(e)}")
         except Exception as e:
             raise Exception(f"Error calling OpenAI: {str(e)}")
     
