@@ -4,15 +4,49 @@ Configuration settings for Competitive Intelligence Agent
 import os
 from dotenv import load_dotenv
 
-# Load environment variables
+# Load environment variables for local development
 load_dotenv()
+
+
+def get_secret(key: str, default: str = None) -> str:
+    """
+    Universal secret getter - works both locally and on Streamlit Cloud.
+    
+    Priority:
+    1. Streamlit Secrets (for cloud deployment)
+    2. Environment variables (for local .env)
+    3. Default value
+    
+    Args:
+        key: Secret key name
+        default: Default value if not found
+        
+    Returns:
+        Secret value or default
+    """
+    # Try Streamlit secrets first (Cloud)
+    try:
+        import streamlit as st
+        if hasattr(st, 'secrets') and key in st.secrets:
+            return st.secrets[key]
+    except (ImportError, FileNotFoundError, AttributeError):
+        pass
+    
+    # Fall back to environment variables (Local)
+    value = os.getenv(key)
+    if value is not None:
+        return value
+    
+    # Return default
+    return default
+
 
 class Config:
     """Application configuration"""
     
-    # API Keys
-    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-    NEWS_API_KEY = os.getenv("NEWS_API_KEY", "")
+    # API Keys - now works everywhere!
+    OPENAI_API_KEY = get_secret("OPENAI_API_KEY")
+    NEWS_API_KEY = get_secret("NEWS_API_KEY", "")
     
     # OpenAI Settings
     OPENAI_MODEL = "gpt-3.5-turbo"
@@ -37,10 +71,10 @@ class Config:
     CHUNK_OVERLAP = 200
     TOP_K_RESULTS = 5
     
-    # Cache Settings (NEW in v2.0)
+    # Cache Settings
     CACHE_ENABLED = True
-    CACHE_TTL_HOURS = 24  # Cache validity: 24 hours
-    CACHE_DIR = "data/cache"
+    CACHE_TTL_HOURS = 24
+    CACHE_DIR = get_secret("CACHE_DIR", "data/cache")
     
     # Streamlit Settings
     PAGE_TITLE = "🔍 Competitive Intelligence + Content Generator"
@@ -49,10 +83,21 @@ class Config:
     
     @classmethod
     def validate(cls):
-        """Validate that required API keys are present"""
+        """
+        Validate that required API keys are present.
+        Returns (is_valid, message) instead of raising exception.
+        """
         if not cls.OPENAI_API_KEY:
-            raise ValueError("OPENAI_API_KEY not found in environment variables")
-        return True
+            return False, "OPENAI_API_KEY not found"
+        return True, "Configuration valid"
+    
+    @classmethod
+    def get_missing_keys(cls):
+        """Get list of missing required keys"""
+        missing = []
+        if not cls.OPENAI_API_KEY:
+            missing.append("OPENAI_API_KEY")
+        return missing
 
-# Validate on import
-Config.validate()
+
+# DO NOT validate on import - let the app handle it

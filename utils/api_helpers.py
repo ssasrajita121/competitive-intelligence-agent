@@ -7,8 +7,9 @@ from datetime import datetime, timedelta
 import openai
 from config.config import Config
 
-# Set OpenAI API key
-openai.api_key = Config.OPENAI_API_KEY
+# Set OpenAI API key if available
+if Config.OPENAI_API_KEY:
+    openai.api_key = Config.OPENAI_API_KEY
 
 
 class APIHelpers:
@@ -27,6 +28,14 @@ class APIHelpers:
         Returns:
             Generated text response
         """
+        # Check if API key is available
+        if not Config.OPENAI_API_KEY:
+            raise RuntimeError(
+                "❌ OPENAI_API_KEY not configured!\n\n"
+                "Local: Add to .env file\n"
+                "Cloud: Add to Streamlit Secrets"
+            )
+        
         try:
             response = openai.chat.completions.create(
                 model=Config.OPENAI_MODEL,
@@ -37,9 +46,19 @@ class APIHelpers:
                 temperature=temperature or Config.OPENAI_TEMPERATURE,
                 max_tokens=max_tokens or Config.MAX_TOKENS
             )
-            return response.choices[0].message.content
-        except Exception as e:
+            
+            content = response.choices[0].message.content
+            
+            # Validate response is not empty
+            if not content or content.strip() == "":
+                raise ValueError("OpenAI returned empty response")
+            
+            return content
+            
+        except openai.APIError as e:
             raise Exception(f"OpenAI API error: {str(e)}")
+        except Exception as e:
+            raise Exception(f"Error calling OpenAI: {str(e)}")
     
     @staticmethod
     def search_news(query, days_back=30):

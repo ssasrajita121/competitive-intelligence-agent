@@ -8,6 +8,24 @@ from agents.content_agent import ContentAgent
 from config.config import Config
 import json
 
+# ========== ADD THIS SECTION ==========
+# Check configuration before starting app
+is_valid, message = Config.validate()
+if not is_valid:
+    st.error(f"⚠️ Configuration Error: {message}")
+    st.info("**Please set your API keys:**")
+    st.code("""
+# Local Development (.env file):
+OPENAI_API_KEY=sk-...
+NEWS_API_KEY=your-key-here
+
+# Streamlit Cloud (Secrets):
+OPENAI_API_KEY = "sk-..."
+NEWS_API_KEY = "your-key-here"
+    """, language="bash")
+    st.stop()
+# ========================================
+
 # Page configuration
 st.set_page_config(
     page_title=Config.PAGE_TITLE,
