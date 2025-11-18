@@ -37,8 +37,9 @@ class Config:
     CHUNK_OVERLAP = 200
     TOP_K_RESULTS = 5
     
-    # Cache Settings
-    ENABLE_CACHE = True
+    # Cache Settings (NEW in v2.0)
+    CACHE_ENABLED = True
+    CACHE_TTL_HOURS = 24  # Cache validity: 24 hours
     CACHE_DIR = "data/cache"
     
     # Streamlit Settings

@@ -67,7 +67,10 @@ if st.button("🔍 Start Research", type="primary", disabled=not topic):
             results = research_agent.research_topic(topic, research_type.lower())
             st.session_state.research_results = results
             st.session_state.research_done = True
-            st.success(f"✅ Research completed for: {topic}")
+            if results.get('cached', False):
+                st.success(f"✅ Research completed for: {topic}")
+            else:
+                st.success(f"⚡ Using cached data for: {topic} (instant!)")
         except Exception as e:
             st.error(f"❌ Research failed: {str(e)}")
             st.session_state.research_done = False

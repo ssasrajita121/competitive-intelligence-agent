@@ -1,8 +1,3 @@
-notepad .gitignore
-```
-
-**Add:**
-```
 # Environment
 .env
 venv/
@@ -22,3 +17,12 @@ data/cache/*
 # IDE
 .vscode/
 .idea/
+
+# Cache data (don't commit to Git)
+data/cache/*.json
+data/cache/*.db
+data/chroma_db/
+
+# Python cache
+*.pyc
+__pycache__/

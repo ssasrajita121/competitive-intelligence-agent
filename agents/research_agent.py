@@ -5,6 +5,7 @@ from utils.api_helpers import APIHelpers, DataProcessor
 from utils.prompts import Prompts
 from config.config import Config
 from datetime import datetime
+from utils.cache_manager import CacheManager
 import json
 
 
@@ -14,6 +15,7 @@ class ResearchAgent:
     def __init__(self):
         self.api_helper = APIHelpers()
         self.data_processor = DataProcessor()
+        self.cache_manager = CacheManager(ttl_hours=Config.CACHE_TTL_HOURS)  # NEW!
     
     def research_topic(self, topic, research_type="company"):
         """
@@ -27,6 +29,16 @@ class ResearchAgent:
             Dictionary with research results
         """
         print(f"🔍 Researching: {topic}")
+        
+        # CHECK CACHE FIRST (NEW in v2.0!)
+        if Config.CACHE_ENABLED:
+            cached_results = self.cache_manager.get(topic, research_type)
+            if cached_results:
+                print("⚡ Using cached data - instant results!")
+                return cached_results
+        
+        # Cache miss - do fresh research
+        print("🌐 Fetching fresh data from APIs...")
         
         # Gather data from multiple sources
         news_results = self._search_news(topic)
@@ -48,8 +60,13 @@ class ResearchAgent:
             "summary": summary,
             "insights": insights,
             "key_facts": self._extract_key_facts(summary),
-            "sentiment": self._analyze_sentiment(summary)
+            "sentiment": self._analyze_sentiment(summary),
+            "cached": False  # NEW: indicate this is fresh data
         }
+        
+        # CACHE THE RESULTS (NEW in v2.0!)
+        if Config.CACHE_ENABLED:
+            self.cache_manager.set(topic, research_type, results)
         
         return results
     
