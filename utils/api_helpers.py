@@ -13,14 +13,41 @@ for proxy_var in ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy']:
     if proxy_var in os.environ:
         del os.environ[proxy_var]
 
-# Initialize OpenAI client (NEW pattern for openai>=1.0)
-client = None
-if Config.OPENAI_API_KEY:
-    try:
-        client = OpenAI(api_key=Config.OPENAI_API_KEY)
-    except Exception as e:
-        print(f"OpenAI client initialization error: {e}")
-        client = None
+# Global client variable - will be initialized on first use
+_client = None
+
+def get_openai_client():
+    """
+    Lazy initialization of OpenAI client.
+    Creates client only when first needed, not at module import.
+    """
+    global _client
+    
+    if _client is None:
+        if not Config.OPENAI_API_KEY:
+            raise RuntimeError(
+                "❌ OPENAI_API_KEY not configured!\n\n"
+                "Local: Add to .env file\n"
+                "Cloud: Add to Streamlit Secrets"
+            )
+        
+        # Remove proxy vars again (just to be safe)
+        for proxy_var in ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy']:
+            os.environ.pop(proxy_var, None)
+        
+        try:
+            # Initialize client with explicit settings
+            _client = OpenAI(
+                api_key=Config.OPENAI_API_KEY,
+                timeout=30.0,
+                max_retries=2
+            )
+            print("✅ OpenAI client initialized successfully")
+        except Exception as e:
+            print(f"❌ OpenAI client initialization failed: {e}")
+            raise
+    
+    return _client
 
 
 class APIHelpers:
@@ -39,19 +66,10 @@ class APIHelpers:
         Returns:
             Generated text response
         """
-        # Check if API key is available
-        if not Config.OPENAI_API_KEY:
-            raise RuntimeError(
-                "❌ OPENAI_API_KEY not configured!\n\n"
-                "Local: Add to .env file\n"
-                "Cloud: Add to Streamlit Secrets"
-            )
-        
-        # Check if client is initialized
-        if client is None:
-            raise RuntimeError("OpenAI client not initialized. Check logs for initialization errors.")
-        
         try:
+            # Get client (lazy initialization)
+            client = get_openai_client()
+            
             response = client.chat.completions.create(
                 model=Config.OPENAI_MODEL,
                 messages=[
@@ -71,6 +89,8 @@ class APIHelpers:
             return content
             
         except Exception as e:
+            # Log the full error for debugging
+            print(f"❌ OpenAI API Error: {type(e).__name__}: {str(e)}")
             raise Exception(f"Error calling OpenAI: {str(e)}")
     
     @staticmethod
@@ -191,9 +211,6 @@ class APIHelpers:
         Returns:
             List of search results
         """
-        # Placeholder for development
-        # In production, use: https://serpapi.com/ or Google Custom Search
-        
         return [
             {
                 "title": f"Comprehensive Guide to {query}",
@@ -215,9 +232,6 @@ class DataProcessor:
         
         # Remove extra whitespace
         text = ' '.join(text.split())
-        
-        # Remove special characters (keep basic punctuation)
-        # Add more cleaning as needed
         
         return text
     
