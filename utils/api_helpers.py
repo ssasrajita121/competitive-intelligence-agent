@@ -6,11 +6,21 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 from openai import OpenAI
 from config.config import Config
+import os
+
+# Remove proxy environment variables that conflict with OpenAI client
+for proxy_var in ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy']:
+    if proxy_var in os.environ:
+        del os.environ[proxy_var]
 
 # Initialize OpenAI client (NEW pattern for openai>=1.0)
 client = None
 if Config.OPENAI_API_KEY:
-    client = OpenAI(api_key=Config.OPENAI_API_KEY)
+    try:
+        client = OpenAI(api_key=Config.OPENAI_API_KEY)
+    except Exception as e:
+        print(f"OpenAI client initialization error: {e}")
+        client = None
 
 
 class APIHelpers:
@@ -39,7 +49,7 @@ class APIHelpers:
         
         # Check if client is initialized
         if client is None:
-            raise RuntimeError("OpenAI client not initialized")
+            raise RuntimeError("OpenAI client not initialized. Check logs for initialization errors.")
         
         try:
             response = client.chat.completions.create(
