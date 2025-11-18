@@ -251,6 +251,19 @@ if st.session_state.research_done and st.session_state.research_results:
 # ====================
 # SIDEBAR
 # ====================
+import streamlit as st
+from config.config import Config
+
+# ========== DEBUG TEST - ADD THIS ==========
+st.sidebar.write("### 🔧 API Key Test")
+if Config.OPENAI_API_KEY:
+    st.sidebar.success(f"✅ Key found: {Config.OPENAI_API_KEY[:15]}...")
+else:
+    st.sidebar.error("❌ NO KEY FOUND!")
+st.sidebar.write(f"**Key length:** {len(Config.OPENAI_API_KEY) if Config.OPENAI_API_KEY else 0}")
+# ==========================================
+
+# Rest of your app...
 with st.sidebar:
     st.header("🔧 Debug Tools")
     
