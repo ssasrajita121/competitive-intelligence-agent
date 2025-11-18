@@ -7,7 +7,13 @@ from agents.research_agent import ResearchAgent
 from agents.content_agent import ContentAgent
 from config.config import Config
 import json
+import streamlit as st
 
+# TEMPORARY: Force clear cache on every load
+st.cache_data.clear()
+st.cache_resource.clear()
+
+# Rest of your app...
 # ========== ADD THIS SECTION ==========
 # Check configuration before starting app
 is_valid, message = Config.validate()
