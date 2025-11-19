@@ -254,39 +254,9 @@ if st.session_state.research_done and st.session_state.research_results:
 import streamlit as st
 from config.config import Config
 
-# ========== DEBUG TEST - ADD THIS ==========
-st.sidebar.write("### 🔧 API Key Test")
-if Config.OPENAI_API_KEY:
-    st.sidebar.success(f"✅ Key found: {Config.OPENAI_API_KEY[:15]}...")
-else:
-    st.sidebar.error("❌ NO KEY FOUND!")
-st.sidebar.write(f"**Key length:** {len(Config.OPENAI_API_KEY) if Config.OPENAI_API_KEY else 0}")
 # ==========================================
 
 # Rest of your app...
-with st.sidebar:
-    st.header("🔧 Debug Tools")
-    
-    # Clear Cache Button
-    if st.button("🗑️ CLEAR ALL CACHE"):
-        # Clear Streamlit cache
-        st.cache_data.clear()
-        st.cache_resource.clear()
-        
-        # Clear research agent cache
-        try:
-            from agents.research_agent import ResearchAgent
-            agent = ResearchAgent()
-            if hasattr(agent, 'cache_manager'):
-                cleared = agent.cache_manager.clear_all()
-                st.success(f"Cleared {cleared} cached research files!")
-        except Exception as e:
-            st.warning(f"Could not clear research cache: {e}")
-        
-        st.success("✅ All caches cleared! Try researching again.")
-        st.rerun()
-    
-    st.divider()
 with st.sidebar:
     st.header("ℹ️ How It Works")
     
