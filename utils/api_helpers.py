@@ -31,18 +31,21 @@ def get_openai_client():
                 "Cloud: Add to Streamlit Secrets"
             )
         
-        # Remove proxy vars again (just to be safe)
-        for proxy_var in ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy']:
+        # Remove proxy vars (do this every time)
+        for proxy_var in ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy', 
+                          'NO_PROXY', 'no_proxy', 'ALL_PROXY', 'all_proxy']:
             os.environ.pop(proxy_var, None)
         
         try:
-            # Initialize client with explicit settings
+            # Initialize client with EXPLICIT proxy=None
+            import httpx
             _client = OpenAI(
                 api_key=Config.OPENAI_API_KEY,
                 timeout=30.0,
-                max_retries=2
+                max_retries=2,
+                http_client=httpx.Client(proxy=None)  # ← CRITICAL FIX
             )
-            print("✅ OpenAI client initialized successfully")
+            print("✅ OpenAI client initialized successfully (no proxy)")
         except Exception as e:
             print(f"❌ OpenAI client initialization failed: {e}")
             raise
