@@ -255,23 +255,23 @@ import streamlit as st
 from config.config import Config
 
 # ========== DEBUG TEST - ADD THIS ==========
-#st.sidebar.write("### 🔧 API Key Test")
-#if Config.OPENAI_API_KEY:
-#    st.sidebar.success(f"✅ Key found: {Config.OPENAI_API_KEY[:15]}...")
-#else:
-#    st.sidebar.error("❌ NO KEY FOUND!")
-#st.sidebar.write(f"**Key length:** {len(Config.OPENAI_API_KEY) if Config.OPENAI_API_KEY else 0}")
+st.sidebar.write("### 🔧 API Key Test")
+if Config.OPENAI_API_KEY:
+    st.sidebar.success(f"✅ Key found: {Config.OPENAI_API_KEY[:15]}...")
+else:
+    st.sidebar.error("❌ NO KEY FOUND!")
+st.sidebar.write(f"**Key length:** {len(Config.OPENAI_API_KEY) if Config.OPENAI_API_KEY else 0}")
 # ==========================================
 
 # Rest of your app...
-#with st.sidebar:
-#    st.header("🔧 Debug Tools")
+with st.sidebar:
+    st.header("🔧 Debug Tools")
     
-#    # Clear Cache Button
-#    if st.button("🗑️ CLEAR ALL CACHE"):
-#        # Clear Streamlit cache
-#        st.cache_data.clear()
-#        st.cache_resource.clear()
+    # Clear Cache Button
+    if st.button("🗑️ CLEAR ALL CACHE"):
+        # Clear Streamlit cache
+        st.cache_data.clear()
+        st.cache_resource.clear()
         
         # Clear research agent cache
         try:
